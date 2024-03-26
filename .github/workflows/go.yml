@@ -28,10 +28,26 @@ jobs:
     - name: Build macos amd64
       run: GOOS=darwin GOARCH=arm64 go build -o ssm2ssh_macos_arm -v main.go
     
+    - name: Compress linux amd64
+      uses: a7ul/tar-action@v1.1.0
+      with:
+        command: c
+        files: |
+            ./ssm2ssh_linux_amd64
+        outPath: ssm2ssh_linux_amd64.tar.gz
+        
+    - name: Compress MacOS m1
+      uses: a7ul/tar-action@v1.1.0
+      with:
+        command: c
+        files: |
+            ./ssm2ssh_macos_arm
+        outPath: ssm2ssh_macos_arm.tar.gz
+          
     - name: Release
       uses: softprops/action-gh-release@v1
       with:
         files: |
-            ssm2ssh_linux_amd64
-            ssm2ssh_macos_arm
+            ssm2ssh_linux_amd64.tar.gz
+            ssm2ssh_macos_arm.tar.gz
             
