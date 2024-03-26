@@ -21,5 +21,16 @@ jobs:
       with:
         go-version: '1.22'
 
-    - name: Build
-      run: go build -v ./...
+    - name: Build linux amd64
+      run: GOOS=linux GOARCH=amd64 go build -o ssm2ssh_linux_amd64 -v ./...
+
+    - name: Build macos amd64
+      run: GOOS=darwin GOARCH=arm64 go build -o ssm2ssh_macos_arm -v ./...
+    
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+            ssm2ssh_linux_amd64
+            ssm2ssh_macos_arm
+            
