@@ -22,10 +22,10 @@ jobs:
         go-version: '1.22'
 
     - name: Build linux amd64
-      run: GOOS=linux GOARCH=amd64 go build -o ssm2ssh_linux_amd64 -v ./...
+      run: GOOS=linux GOARCH=amd64 go build -o ssm2ssh_linux_amd64 -v main.go
 
     - name: Build macos amd64
-      run: GOOS=darwin GOARCH=arm64 go build -o ssm2ssh_macos_arm -v ./...
+      run: GOOS=darwin GOARCH=arm64 go build -o ssm2ssh_macos_arm -v main.go
     
     - name: Release
       uses: softprops/action-gh-release@v1
