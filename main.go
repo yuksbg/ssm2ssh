@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/mmmorris1975/ssm-session-client/ssmclient"
@@ -19,21 +20,41 @@ func main() {
 	instanceID := os.Args[1]
 	foundInstance := types.Instance{}
 	foundProfile := ""
+	useIAMProfile := false
+	iamProfile := os.Getenv(`USE_IAM_ROLE`)
+
 	if instanceID == "" {
 		fmt.Println("All params are required")
 		os.Exit(1)
 	}
-	prf, _ := profiles.ListAWSProfiles()
-	lop.ForEach(prf, func(item string, index int) {
-		f, err := profiles.Find(item, instanceID)
-		if err != nil {
+	if os.Getenv("USE_IAM_ROLE") != "" { /// try with aim
+		useIAMProfile = true
+		arnRole := os.Getenv("USE_IAM_ROLE")
+		if arnRole == "1" {
+			arnRole = ""
+		}
+		iamProfile = arnRole
+		f, err := profiles.FindIAM(arnRole, instanceID)
+		if err == nil {
+			if *f.Placement.AvailabilityZone != "" {
+				foundInstance = f
+			}
+		} else {
 			return
 		}
-		if *f.Placement.AvailabilityZone != "" {
-			foundInstance = f
-			foundProfile = item
-		}
-	})
+	} else {
+		prf, _ := profiles.ListAWSProfiles()
+		lop.ForEach(prf, func(item string, index int) {
+			f, err := profiles.Find(item, instanceID)
+			if err != nil {
+				return
+			}
+			if *f.Placement.AvailabilityZone != "" {
+				foundInstance = f
+				foundProfile = item
+			}
+		})
+	}
 
 	if foundInstance.InstanceId == nil {
 		os.Exit(1)
@@ -56,10 +77,14 @@ func main() {
 		fmt.Println("SSH Add error - ", err.Error())
 		os.Exit(1)
 	}
-
-	cfg, err := config.LoadDefaultConfig(context.Background(), config.WithSharedConfigProfile(foundProfile))
-	if err != nil {
-		log.Fatal(err)
+	var cfg aws.Config
+	if useIAMProfile {
+		cfg = profiles.GetIAMConfig(iamProfile)
+	} else {
+		cfg, err = config.LoadDefaultConfig(context.Background(), config.WithSharedConfigProfile(foundProfile))
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	var port int
