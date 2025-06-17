@@ -61,4 +61,5 @@ jobs:
         files: |
             ssm2ssh_linux_amd64.tar.gz
             ssm2ssh_macos_arm.tar.gz
+            ssm2ssh_windows_amd64.tar.gz
             
