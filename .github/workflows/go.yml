@@ -27,7 +27,18 @@ jobs:
 
     - name: Build macos amd64
       run: GOOS=darwin GOARCH=arm64 go build -o ssm2ssh_macos_arm -v main.go
-    
+
+    - name: Build Windows amd64
+      run: GOOS=windows GOARCH=amd64 go build -o ssm2ssh_windows_amd64 -v main.go
+
+    - name: Compress Windows amd64
+      uses: a7ul/tar-action@v1.1.0
+      with:
+        command: c
+        files: |
+            ./ssm2ssh_windows_amd64
+        outPath: ssm2ssh_windows_amd64.tar.gz
+      
     - name: Compress linux amd64
       uses: a7ul/tar-action@v1.1.0
       with:
